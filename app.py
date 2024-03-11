@@ -220,9 +220,34 @@ def plot_dount(data):
     return init_dount_fig
 
 
+def idk(data):
+    for col in ['TotalRecovered', 'ActiveCases', 'Serious,Critical']:
+        data[col] = pd.to_numeric(data[col], errors='coerce')
+
+    # Create the scatter plot
+    fig = go.Figure(data=go.Scatter(
+        x=data['TotalCases'],
+        y=data['Deaths/1M pop'],
+        text=data.index, 
+        mode='markers',
+        marker=dict(
+            size=data['Population'] / 1e7, 
+            color=data['TotalTests'], 
+            showscale=True 
+        )
+    ))
+
+    fig.update_layout(
+        title='Total Cases vs. Deaths per 1M Population by Country',
+        xaxis_title='Total Cases',
+        yaxis_title='Deaths per 1M Population',
+        legend_title='Total Tests'
+    )
+    return fig
+
 def init_figure():
     "This function initiate all the needed figure to start the app."
-    return plot_scatter(data), plot_continent_data(data, keyword="Total"), plot_top_k_countries(10, "TotalCases"), plot_boxplots(data), plot_dount(data)
+    return plot_scatter(data), plot_continent_data(data, keyword="Total"), plot_top_k_countries(10, "TotalCases"), plot_boxplots(data), plot_dount(data), idk(data)
 
 
 def getTotals():
@@ -256,7 +281,7 @@ countries_data = scraped_data
 data = create_clean_dataframe(countries_data)
 # print("data", data)
 
-fig, init_continent_fig, init_k_countries_plot, init_box_fig, init_dount_fig = init_figure()
+fig, init_continent_fig, init_k_countries_plot, init_box_fig, init_dount_fig, gh = init_figure()
 
 total_cases, total_deaths, total_recoveries = getTotals()
 
@@ -266,21 +291,6 @@ total_cases, total_deaths, total_recoveries = getTotals()
 # Initializing the app
 app = dash.Dash(__name__)
 server = app.server
-
-
-# fig = px.scatter(
-#     data, x="TotalCases", y="TotalTests",
-#     size="Population", color="Continent", hover_name="Country",
-#     log_x=True, size_max=60,
-#     title="COVID-19 Total Cases vs. Total Tests by Country",
-#     labels={"TotalCases": "Total Cases", "TotalTests": "Total Tests"}
-# )
-
-# fig = px.scatter(data, x='TotalTests', y='TotalCases', size='Population', 
-#                  hover_name=data.index, title='Total Cases vs Total Tests')
-
-
-
 
 
 app.layout = html.Div(
@@ -507,6 +517,13 @@ app.layout = html.Div(
         
 
         html.Div([
+            dcc.Graph(id="gh", figure=gh),
+            html.H5("COVID-19 Impact Analysis: Total Cases vs. Mortality Rate per Million, Highlighted by Population and Testing Capacity", style={"text-align": "center", "fontFamily": theme["font_family_header"], "color": theme["text"]}),
+            ], 
+            style={ 'padding': theme['card_padding'], 'borderRadius': theme['card_border']['radius'], 'margin': theme['card_margin']}
+        ), 
+        
+        html.Div([
             html.P("All right reserved for Mohamed Essabir", style={'text-align':'center'})
         ]),
     ]
@@ -559,7 +576,6 @@ def update_donut_graph(selected_country):
         # height=500,
         # width=700
     )
-
     return fig
 
 if __name__ == '__main__':
