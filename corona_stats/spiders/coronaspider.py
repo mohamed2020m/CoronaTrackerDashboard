@@ -1,8 +1,5 @@
 import scrapy
-from scrapy.crawler import CrawlerProcess
 from collections import defaultdict
-import re
-from corona_stats.items import CoronaStatsItem
 
 
 class CoronaSpiderSpider(scrapy.Spider):
@@ -29,8 +26,7 @@ class CoronaSpiderSpider(scrapy.Spider):
         
         # Extracting rows respecting specified column grouping
         # print(corona_table.xpath('.//tr[@style=""]')[0].get())
-        
-        
+                
         countries_data = defaultdict(dict)
         
         # print(formatted_output)
